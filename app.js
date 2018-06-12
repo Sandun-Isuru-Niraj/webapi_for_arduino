@@ -43,9 +43,15 @@ app.post('/data',(req,res)=>{
      humidity: hum
    
  });
-	var obj= object = "sadun";
-     res.json({data:obj})
-		 
+var switch1;
+var valRef = ref.child("switch");
+valRef.on("value", function(snapshot) {
+  
+    switch1 = snapshot.val();
+});
+	
+var obj= object = switch1;
+res.json({data:obj})	 
 
  }); 
 
