@@ -16,7 +16,7 @@ admin.initializeApp({
   });
 
   var db = admin.database();
-  var ref = db.ref("data")
+  
 //body parser middlewear
 app.use(bodyparser.urlencoded({ extended: false })); 
 app.use(bodyparser.json());
@@ -33,8 +33,11 @@ const server_port = process.env.PORT || 3002;
 app.post('/data',(req,res)=>{
  
  console.log(req.body); 
+ var dev_id = req.body.devide_ID;
  var temp = req.body.temprature;
  var hum = req.body.humidity;
+
+ var ref = db.ref(dev_id)
 
  var wetherRef = ref.child("weather");
  wetherRef.set({
@@ -43,17 +46,93 @@ app.post('/data',(req,res)=>{
      humidity: hum
    
  });
+
+ var EventAddRef = ref.child("events");
+ var TrigerRef = ref.child("triger");
+ var valRef = ref.child("switch");
+
+ EventAddRef.on("value", function(snapshot) {
+  
+    if(!snapshot.exists()){
+ 
+    }else{
+
+    if(snapshot.child("has").val() == "1"){
+
+        if(snapshot.child("data").val() == "temp"){
+            if(snapshot.child("operator").val() == "<"){
+                if(parseInt(snapshot.child("value").val()) <= parseInt(temp)){
+                    TrigerRef.set(1);
+                    valRef.set(1);
+
+                }else{
+                    TrigerRef.set(0);
+                    valRef.set(0);
+                }
+
+            }else if(snapshot.child("operator").val() == ">"){
+                if(parseInt(snapshot.child("value").val()) >= parseInt(temp)){
+                    TrigerRef.set(1);
+                    valRef.set(1);
+
+                }else{
+                    TrigerRef.set(0);
+                    valRef.set(0);
+                }
+            }
+        }else if(snapshot.child("data").val() == "hum"){
+            if(snapshot.child("operator").val() == "<"){
+                if(parseInt(snapshot.child("value").val()) <= parseInt(temp)){
+                    TrigerRef.set(1);
+                    valRef.set(1);
+
+                }else{
+                    TrigerRef.set(0);
+                    valRef.set(0);
+                }
+
+            }else if(snapshot.child("operator").val() == ">"){
+                if(parseInt(snapshot.child("value").val()) >= parseInt(temp)){
+                    TrigerRef.set(1);
+                    valRef.set(1);
+
+                }else{
+                    TrigerRef.set(0);
+                    valRef.set(0);
+                }
+            }
+        }
+    }else{
+
+    }
+}
+});
+
+
+
 var switch1;
 var valRef = ref.child("switch");
+
+
 valRef.on("value", function(snapshot) {
   
+    if(!snapshot.exists()){
+        valRef.set(0);
+    }else{
     switch1 = snapshot.val();
+    }
 });
-	
+
 var obj= object = switch1;
-res.json({data:obj})	 
+
+
+res.json({
+    data:obj
+})	 
 
  }); 
+
+
 
 
 app.listen(server_port,(err)=>{
