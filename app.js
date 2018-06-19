@@ -104,6 +104,7 @@ app.post('/data',(req,res)=>{
         }
     }else{
 
+        TrigerRef.set(0);
     }
 }
 });
