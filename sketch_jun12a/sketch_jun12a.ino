@@ -1,13 +1,19 @@
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFi.h>
 #include "ArduinoJson-v5.12.0.h"
+#include "dht.h"
+#define dht_apin 2
 
-int sensorPin = A0;
-int LED = 5;
-int sensorValue = 0; 
+String DEVICE_ID = "4526tb254f2";
+//int sensorPin = A0;
+int LED = 16; 
+dht DHT;
+
+
 void setup() {
   pinMode(LED, OUTPUT);
   Serial.begin(115200);                                  //Serial connection
+
   WiFi.begin("Morasquad", "");   //WiFi connection
  
   while (WiFi.status() != WL_CONNECTED) {  //Wait for the WiFI connection completion
@@ -22,13 +28,16 @@ void setup() {
 }
  
 void loop() {
- sensorValue = analogRead(sensorPin);
+ DHT.read11(dht_apin);
+ int h = DHT.humidity;
+ int t = DHT.temperature;
  if(WiFi.status()== WL_CONNECTED){   //Check WiFi connection status
   StaticJsonBuffer<300> JSONbuffer;   //Declaring static JSON buffer
   JsonObject& JSONencoder = JSONbuffer.createObject();
 
-  JSONencoder["temprature"] = sensorValue;
-  JSONencoder["humidity"] = "200";
+  JSONencoder["devide_ID"] = DEVICE_ID;
+  JSONencoder["temprature"] = t;
+  JSONencoder["humidity"] = h;
   char JSONmessageBuffer[300];
   JSONencoder.prettyPrintTo(JSONmessageBuffer, sizeof(JSONmessageBuffer));
   //Serial.println(JSONmessageBuffer);
@@ -36,7 +45,7 @@ void loop() {
  
    HTTPClient http;    //Declare object of class HTTPClient
  
-   http.begin("http://188.166.105.10:3002/data");      //Specify request destination
+   http.begin("http://dreameffect.projects.mrt.ac.lk:3002/data");      //Specify request destination
    http.addHeader("Content-Type", "application/json");  //Specify content-type header
  
    int httpCode = http.POST(JSONmessageBuffer);   //Send the request
@@ -63,6 +72,6 @@ void loop() {
  
  }
  
-  delay(100);  //Send a request every 30 seconds
+  delay(200);  //Send a request every 30 seconds
  
 }
